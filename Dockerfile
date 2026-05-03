@@ -1,11 +1,17 @@
 FROM node:24-slim AS base
+
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
+
 RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 
 FROM base AS build
 
 WORKDIR /app
+
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/* && \
+    git config --global user.email "dev@example.com" && \
+    git config --global user.name "dev"
 
 COPY pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/papra-client/package.json apps/papra-client/
@@ -14,10 +20,11 @@ COPY packages/webhooks/package.json packages/webhooks/
 COPY packages/lecture/package.json packages/lecture/
 COPY packages/search-parser/package.json packages/search-parser/
 
-RUN pnpm config set registry https://registry.npmmirror.com && \
-    pnpm install --frozen-lockfile --ignore-scripts
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 COPY . .
+
+RUN git init && git add -A && git commit -m "init" || true
 
 RUN pnpm --filter "@papra/app-client..." run build && \
     pnpm --filter "@papra/app-server..." run build
