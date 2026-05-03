@@ -29,7 +29,7 @@ export function findMatchingLocale({
       return localeMatchLanguage.baseName as Locale;
     }
   }
-  return 'en';
+  return 'zh';
 }
 
 export function createTranslator<Dict extends Record<string, string>>({ getDictionary }: { getDictionary: () => Dict }) {
